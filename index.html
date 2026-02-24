@@ -1,253 +1,131 @@
 <!DOCTYPE html>
 <html lang="en-us">
-<head>
+  <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Pirate Simulator</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Unity WebGL Player | Pirate Simulator</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        html, body {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background: #1a1a2e;
-        }
-        
-        #unity-container {
-            width: 100%;
-            height: 100%;
-            position: relative;
-        }
-        
-        #unity-canvas {
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
-        
-        #loading-screen {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: #1a1a2e;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-        }
-        
-        #loading-screen h1 {
-            color: #e94560;
-            font-family: 'Segoe UI', Arial, sans-serif;
-            font-size: 2em;
-            margin-bottom: 20px;
-        }
-        
-        #progress-container {
-            width: 80%;
-            max-width: 400px;
-            height: 20px;
-            background: #16213e;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        
-        #progress-bar {
-            width: 0%;
-            height: 100%;
-            background: linear-gradient(90deg, #e94560, #0f3460);
-            transition: width 0.2s;
-        }
-        
-        #progress-text {
-            color: #aaa;
-            font-family: 'Segoe UI', Arial, sans-serif;
-            margin-top: 15px;
-            font-size: 14px;
-        }
-        
-        #error-screen {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: #1a1a2e;
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 200;
-            padding: 20px;
-            text-align: center;
-        }
-        
-        #error-screen h1 {
-            color: #e94560;
-            font-family: 'Segoe UI', Arial, sans-serif;
-            font-size: 1.5em;
-            margin-bottom: 15px;
-        }
-        
-        #error-screen p {
-            color: #aaa;
-            font-family: 'Segoe UI', Arial, sans-serif;
-            font-size: 14px;
-            max-width: 400px;
-            line-height: 1.6;
-        }
-        
-        #mobile-warning {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: #1a1a2e;
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 300;
-            padding: 20px;
-            text-align: center;
-        }
-        
-        #mobile-warning h1 {
-            color: #e94560;
-            font-family: 'Segoe UI', Arial, sans-serif;
-            font-size: 1.8em;
-            margin-bottom: 15px;
-        }
-        
-        #mobile-warning p {
-            color: #aaa;
-            font-family: 'Segoe UI', Arial, sans-serif;
-            font-size: 16px;
-            max-width: 350px;
-            line-height: 1.6;
-        }
-        
-        #mobile-warning .emoji {
-            font-size: 4em;
-            margin-bottom: 20px;
-        }
-        
-        #try-anyway-btn {
-            margin-top: 25px;
-            padding: 12px 30px;
-            background: #e94560;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            font-family: 'Segoe UI', Arial, sans-serif;
-        }
-        
-        #try-anyway-btn:hover {
-            background: #d63850;
-        }
-    </style>
-</head>
-<body>
-    <div id="unity-container">
-        <canvas id="unity-canvas" tabindex="-1"></canvas>
-        
-        <div id="loading-screen">
-            <h1>🏴‍☠️ Pirate Simulator</h1>
-            <div id="progress-container">
-                <div id="progress-bar"></div>
-            </div>
-            <p id="progress-text">Loading... 0%</p>
+    <link rel="stylesheet" href="TemplateData/style.css">
+  </head>
+  <body>
+    <div id="unity-container" class="unity-desktop">
+      <canvas id="unity-canvas" width=1920 height=1080 tabindex="-1"></canvas>
+      <div id="unity-loading-bar">
+        <div id="unity-logo"></div>
+        <div id="unity-progress-bar-empty">
+          <div id="unity-progress-bar-full"></div>
         </div>
-        
-        <div id="error-screen">
-            <h1>⚠️ Loading Error</h1>
-            <p id="error-message">Something went wrong loading the simulation.</p>
-        </div>
-        
-        <div id="mobile-warning">
-            <div class="emoji">🏴‍☠️</div>
-            <h1>Pirate Simulator</h1>
-            <p>This simulation runs best on a desktop or laptop computer.</p>
-            <p>Mobile devices may experience performance issues or errors.</p>
-            <button id="try-anyway-btn">Try Anyway</button>
-        </div>
+      </div>
+      <div id="unity-warning"> </div>
+      <div id="unity-footer">
+        <div id="unity-webgl-logo"></div>
+        <div id="unity-fullscreen-button"></div>
+        <div id="unity-build-title">Pirate Simulator</div>
+      </div>
     </div>
-
     <script>
-        var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-        var mobileWarning = document.getElementById("mobile-warning");
-        var loadingScreen = document.getElementById("loading-screen");
-        var errorScreen = document.getElementById("error-screen");
-        var errorMessage = document.getElementById("error-message");
-        var progressBar = document.getElementById("progress-bar");
-        var progressText = document.getElementById("progress-text");
-        var canvas = document.getElementById("unity-canvas");
-        
-        function startGame() {
-            loadingScreen.style.display = "flex";
-            mobileWarning.style.display = "none";
-            
-            var buildUrl = "Build";
-            var loaderUrl = buildUrl + "/WebGL.loader.js";
-            
-            var config = {
-                dataUrl: buildUrl + "/WebGL.data.br",
-                frameworkUrl: buildUrl + "/WebGL.framework.js.br",
-                codeUrl: buildUrl + "/WebGL.wasm.br",
-                streamingAssetsUrl: "StreamingAssets",
-                companyName: "CS499",
-                productName: "Pirate Simulator",
-                productVersion: "1.0",
-            };
-            
-            if (isMobile) {
-                config.devicePixelRatio = 1;
-            }
-            
-            var script = document.createElement("script");
-            script.src = loaderUrl;
-            script.onerror = function() {
-                showError("Failed to load game files. Please refresh and try again.");
-            };
-            script.onload = function() {
-                createUnityInstance(canvas, config, function(progress) {
-                    var percent = Math.round(progress * 100);
-                    progressBar.style.width = percent + "%";
-                    progressText.textContent = "Loading... " + percent + "%";
-                }).then(function(unityInstance) {
-                    loadingScreen.style.display = "none";
-                }).catch(function(message) {
-                    showError(message);
-                });
-            };
-            document.body.appendChild(script);
+
+      var container = document.querySelector("#unity-container");
+      var canvas = document.querySelector("#unity-canvas");
+      var loadingBar = document.querySelector("#unity-loading-bar");
+      var progressBarFull = document.querySelector("#unity-progress-bar-full");
+      var fullscreenButton = document.querySelector("#unity-fullscreen-button");
+      var warningBanner = document.querySelector("#unity-warning");
+
+      // Shows a temporary message banner/ribbon for a few seconds, or
+      // a permanent error message on top of the canvas if type=='error'.
+      // If type=='warning', a yellow highlight color is used.
+      // Modify or remove this function to customize the visually presented
+      // way that non-critical warnings and error messages are presented to the
+      // user.
+      function unityShowBanner(msg, type) {
+        function updateBannerVisibility() {
+          warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
         }
-        
-        function showError(msg) {
-            loadingScreen.style.display = "none";
-            errorScreen.style.display = "flex";
-            errorMessage.textContent = msg;
-            console.error("Unity Error:", msg);
+        var div = document.createElement('div');
+        div.innerHTML = msg;
+        warningBanner.appendChild(div);
+        if (type == 'error') div.style = 'background: red; padding: 10px;';
+        else {
+          if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
+          setTimeout(function() {
+            warningBanner.removeChild(div);
+            updateBannerVisibility();
+          }, 5000);
         }
-        
-        if (isMobile) {
-            mobileWarning.style.display = "flex";
-            loadingScreen.style.display = "none";
-            document.getElementById("try-anyway-btn").onclick = startGame;
-        } else {
-            startGame();
-        }
+        updateBannerVisibility();
+      }
+
+      var buildUrl = "Build";
+      var loaderUrl = buildUrl + "/WebGL.loader.js";
+      var config = {
+        dataUrl: buildUrl + "/WebGL.data.br",
+        frameworkUrl: buildUrl + "/WebGL.framework.js.br",
+        codeUrl: buildUrl + "/WebGL.wasm.br",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "DefaultCompany",
+        productName: "Pirate Simulator",
+        productVersion: "1.0",
+        showBanner: unityShowBanner,
+      };
+
+      // By default, Unity keeps WebGL canvas render target size matched with
+      // the DOM size of the canvas element (scaled by window.devicePixelRatio)
+      // Set this to false if you want to decouple this synchronization from
+      // happening inside the engine, and you would instead like to size up
+      // the canvas DOM size and WebGL render target sizes yourself.
+      // config.matchWebGLToCanvasSize = false;
+
+      // If you would like all file writes inside Unity Application.persistentDataPath
+      // directory to automatically persist so that the contents are remembered when
+      // the user revisits the site the next time, uncomment the following line:
+      // config.autoSyncPersistentDataPath = true;
+      // This autosyncing is currently not the default behavior to avoid regressing
+      // existing user projects that might rely on the earlier manual
+      // JS_FileSystem_Sync() behavior, but in future Unity version, this will be
+      // expected to change.
+
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        // Mobile device style: fill the whole browser client area with the game canvas:
+
+        var meta = document.createElement('meta');
+        meta.name = 'viewport';
+        meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+        document.getElementsByTagName('head')[0].appendChild(meta);
+        container.className = "unity-mobile";
+        canvas.className = "unity-mobile";
+
+        // To lower canvas resolution on mobile devices to gain some
+        // performance, uncomment the following line:
+        // config.devicePixelRatio = 1;
+
+
+      } else {
+        // Desktop style: Render the game canvas in a window that can be maximized to fullscreen:
+
+        canvas.style.width = "1920px";
+        canvas.style.height = "1080px";
+      }
+
+      loadingBar.style.display = "block";
+
+      var script = document.createElement("script");
+      script.src = loaderUrl;
+      script.onload = () => {
+        createUnityInstance(canvas, config, (progress) => {
+          progressBarFull.style.width = 100 * progress + "%";
+              }).then((unityInstance) => {
+                loadingBar.style.display = "none";
+                fullscreenButton.onclick = () => {
+                  unityInstance.SetFullscreen(1);
+                };
+              }).catch((message) => {
+                alert(message);
+              });
+            };
+
+      document.body.appendChild(script);
+
     </script>
-</body>
+  </body>
 </html>
-```
-
-Copy this, paste into Notepad, save as `index.html` in `C:\Users\Puffy\PirateSimulatorWeb\` (replace the old one).
-
-Then deploy:
-```
-cd C:\Users\Puffy
-deploy.bat "Fix responsive layout"
