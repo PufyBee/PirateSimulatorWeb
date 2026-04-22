@@ -357,13 +357,23 @@
       const canvas = document.getElementById('unity-canvas');
       const script = document.createElement('script');
       script.src = loaderUrl;
-      script.onload = () => {
+     script.onload = () => {
         createUnityInstance(canvas, config, (progress) => {
           loadingBar.textContent = 'Loading ' + Math.round(progress * 100) + '%';
         }).then((unityInstance) => {
+          window.unityInstance = unityInstance;
           loadingBar.classList.remove('active');
-          // Trigger one more layout update after Unity loads
           updateLayout();
+
+          // Mobile: first tap goes fullscreen + locks landscape
+          if (isMobileDevice()) {
+            document.getElementById('unity-container').addEventListener('click', async function() {
+              try {
+                await document.documentElement.requestFullscreen({ navigationUI: "hide" });
+                await screen.orientation.lock("landscape");
+              } catch (e) {}
+            }, { once: true });
+          }
         }).catch((message) => {
           alert(message);
         });
