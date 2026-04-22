@@ -369,7 +369,7 @@
           if (isMobileDevice()) {
             document.getElementById('unity-container').addEventListener('click', async function() {
               try {
-                await document.documentElement.requestFullscreen({ navigationUI: "hide" });
+                await document.getElementById('unity-container').requestFullscreen({ navigationUI: "hide" });
                 await screen.orientation.lock("landscape");
               } catch (e) {}
             }, { once: true });
